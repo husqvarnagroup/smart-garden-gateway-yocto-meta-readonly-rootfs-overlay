@@ -6,7 +6,6 @@ set -euo pipefail
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
 MOUNT="/bin/mount"
-UMOUNT="/bin/umount"
 
 INIT="/sbin/init"
 ROOT_ROINIT="/sbin/init"
@@ -35,17 +34,17 @@ early_setup() {
 }
 
 read_args() {
-	[ -z "${CMDLINE+x}" ] && CMDLINE=`cat /proc/cmdline`
+	[ -z "${CMDLINE+x}" ] && CMDLINE=$(cat /proc/cmdline)
 	for arg in $CMDLINE; do
 		# Set optarg to option parameter, and '' if no parameter was
 		# given
-		optarg=`expr "x$arg" : 'x[^=]*=\(.*\)' || echo ''`
+		optarg=$(expr "x$arg" : 'x[^=]*=\(.*\)' || echo '')
 		case $arg in
 			root=*)
 				ROOT_RODEVICE=$optarg ;;
 			rootfstype=*)
 				ROOT_ROFSTYPE="$optarg"
-				modprobe $optarg 2> /dev/null || \
+				modprobe "$optarg" 2> /dev/null || \
 					log "Could not load $optarg module";;
 			rootinit=*)
 				ROOT_ROINIT=$optarg ;;
@@ -55,7 +54,7 @@ read_args() {
 				ROOT_RWDEVICE=$optarg ;;
 			rootrwfstype=*)
 				ROOT_RWFSTYPE="$optarg"
-				modprobe $optarg 2> /dev/null || \
+				modprobe "$optarg" 2> /dev/null || \
 					log "Could not load $optarg module";;
 			rootrwreset=*)
 				ROOT_RWRESET=$optarg ;;
@@ -68,13 +67,13 @@ read_args() {
 }
 
 fatal() {
-	echo "rorootfs-overlay: $1" >$CONSOLE
-	echo >$CONSOLE
+	echo "rorootfs-overlay: $1" > "$CONSOLE"
+	echo > "$CONSOLE"
 	exec sh
 }
 
 log() {
-	echo "rorootfs-overlay: $1" >$CONSOLE
+	echo "rorootfs-overlay: $1" > "$CONSOLE"
 }
 
 early_setup
@@ -101,10 +100,10 @@ mount_and_boot() {
 
 	# Mount root file system to new mount-point, if unsuccessful, try bind
 	# mounting current root file system.
-	if ! $MOUNT $ROOT_ROMOUNTPARAMS "$ROOT_ROMOUNT" 2>/dev/null && \
-		[ "x$ROOT_ROMOUNTPARAMS_BIND" == "x$ROOT_ROMOUNTPARAMS" ] || \
+	if ! $MOUNT "$ROOT_ROMOUNTPARAMS" "$ROOT_ROMOUNT" 2>/dev/null && \
+		[ "x$ROOT_ROMOUNTPARAMS_BIND" = "x$ROOT_ROMOUNTPARAMS" ] || \
 		log "Could not mount $ROOT_RODEVICE, bind mounting..." && \
-		! $MOUNT $ROOT_ROMOUNTPARAMS_BIND "$ROOT_ROMOUNT"; then
+		! $MOUNT "$ROOT_ROMOUNTPARAMS_BIND" "$ROOT_ROMOUNT"; then
 		fatal "Could not mount read-only rootfs"
 	fi
 
@@ -134,13 +133,13 @@ mount_and_boot() {
 	fi
 
 	# Mount read-write file system into initram root file system
-	if ! $MOUNT $ROOT_RWMOUNTPARAMS $ROOT_RWMOUNT ; then
+	if ! $MOUNT "$ROOT_RWMOUNTPARAMS" $ROOT_RWMOUNT ; then
 		fatal "Could not mount read-write rootfs"
 	fi
 
 	# Reset read-write file system if specified
-	if [ "yes" == "$ROOT_RWRESET" -a -n "${ROOT_RWMOUNT}" ]; then
-		rm -rf $ROOT_RWMOUNT/*
+	if [ "yes" = "$ROOT_RWRESET" ] && [ -n "${ROOT_RWMOUNT}" ]; then
+		rm -rf ${ROOT_RWMOUNT:?}/*
 	fi
 
 	# Determine which unification file system to use
@@ -187,7 +186,7 @@ mount_and_boot() {
 	cd $ROOT_MOUNT
 
 	# switch to actual init in the overlay root file system
-	exec chroot $ROOT_MOUNT $INIT ||
+	exec chroot $ROOT_MOUNT "$INIT" ||
 		fatal "Couldn't chroot, dropping to shell"
 }
 
