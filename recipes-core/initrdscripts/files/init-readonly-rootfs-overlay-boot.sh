@@ -100,10 +100,11 @@ mount_and_boot() {
 
 	# Mount root file system to new mount-point, if unsuccessful, try bind
 	# mounting current root file system.
-	if ! $MOUNT "$ROOT_ROMOUNTPARAMS" "$ROOT_ROMOUNT" 2>/dev/null && \
+	# shellcheck disable=SC2086
+	if ! $MOUNT $ROOT_ROMOUNTPARAMS "$ROOT_ROMOUNT" 2>/dev/null && \
 		[ "x$ROOT_ROMOUNTPARAMS_BIND" = "x$ROOT_ROMOUNTPARAMS" ] || \
 		log "Could not mount $ROOT_RODEVICE, bind mounting..." && \
-		! $MOUNT "$ROOT_ROMOUNTPARAMS_BIND" "$ROOT_ROMOUNT"; then
+		! $MOUNT $ROOT_ROMOUNTPARAMS_BIND "$ROOT_ROMOUNT"; then
 		fatal "Could not mount read-only rootfs"
 	fi
 
@@ -133,7 +134,8 @@ mount_and_boot() {
 	fi
 
 	# Mount read-write file system into initram root file system
-	if ! $MOUNT "$ROOT_RWMOUNTPARAMS" $ROOT_RWMOUNT ; then
+	# shellcheck disable=SC2086
+	if ! $MOUNT $ROOT_RWMOUNTPARAMS $ROOT_RWMOUNT ; then
 		fatal "Could not mount read-write rootfs"
 	fi
 
