@@ -16,3 +16,5 @@ FILES:${PN} += " /init /media/rfs"
 
 # Due to kernel dependency
 PACKAGE_ARCH = "${MACHINE_ARCH}"
+
+QA_EMPTY_DIRS:remove = "/media"
