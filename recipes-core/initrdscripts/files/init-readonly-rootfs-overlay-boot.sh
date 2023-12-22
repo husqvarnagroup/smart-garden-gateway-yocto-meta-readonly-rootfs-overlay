@@ -139,6 +139,12 @@ mount_and_boot() {
 		fatal "Could not mount read-write rootfs"
 	fi
 
+	# Run system upgrade helper if present
+	# TODO: Make path configurable through kernel command line (and upstream)
+	if [ -x /usr/sbin/sysupgrade ]; then
+		/usr/sbin/sysupgrade
+	fi
+
 	# Reset read-write file system if specified
 	if [ "yes" = "$ROOT_RWRESET" ] && [ -n "${ROOT_RWMOUNT}" ]; then
 		rm -rf ${ROOT_RWMOUNT:?}/*
