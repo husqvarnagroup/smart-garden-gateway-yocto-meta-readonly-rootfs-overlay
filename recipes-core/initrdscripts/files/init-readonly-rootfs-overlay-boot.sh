@@ -78,12 +78,16 @@ log() {
 }
 
 wait_for_device() {
+	local dev=$1
+
+	echo "$dev" | grep -q ":" && return
+
 	counter=0
-	while [ ! -b "$1" ]; do
+	while [ ! -b "$dev" ]; do
 		sleep .100
 		counter=$((counter + 1))
 		if [ $counter -ge 50 ]; then
-			fatal "$1 is not availble"
+			fatal "$dev is not availble"
 			exit
 		fi
 	done
